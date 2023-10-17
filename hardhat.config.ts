@@ -1,14 +1,13 @@
 import "@nomicfoundation/hardhat-toolbox";
 import { config as dotenvConfig } from "dotenv";
+import fs from "fs";
 import "hardhat-deploy";
 import "hardhat-tracer";
 import type { HardhatUserConfig } from "hardhat/config";
-import type { NetworkUserConfig } from "hardhat/types";
-import { resolve } from "path";
+import type { NetworkUserConfig, SolcUserConfig } from "hardhat/types";
+import path, { resolve } from "path";
 
 import "./tasks/accounts";
-import "./tasks/greet";
-import "./tasks/deploy";
 import "./tasks/verify";
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
@@ -29,8 +28,6 @@ const cmcApiKey = process.env.CMC_API_KEY || "";
 
 const reportGas: boolean = process.env.REPORT_GAS === "true";
 
-const runOptimizer: boolean = process.env.RUN_OPTIMIZER === "true";
-
 const chainIds = {
   "arbitrum-mainnet": 42161,
   avalanche: 43114,
@@ -43,6 +40,7 @@ const chainIds = {
   "polygon-mainnet": 137,
   "polygon-mumbai": 80001,
   sepolia: 11155111,
+  anvil: 31337,
 };
 
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
@@ -57,6 +55,9 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
     case "bsc-testnet":
       jsonRpcUrl = "https://data-seed-prebsc-1-s1.binance.org:8545";
       break;
+    case "anvil":
+      jsonRpcUrl = "http://127.0.0.1:8545";
+      break;
     default:
       jsonRpcUrl = "https://" + chain + ".infura.io/v3/" + infuraApiKey;
   }
@@ -69,6 +70,120 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
     chainId: chainIds[chain],
     url: jsonRpcUrl,
   };
+}
+
+const swapRouterContractsCompiler = {
+  version: "0.7.6",
+  settings: {
+    metadata: {
+      bytecodeHash: "none",
+    },
+    evmVersion: "istanbul",
+    optimizer: {
+      enabled: true,
+      runs: 1_000_000,
+    },
+  },
+};
+
+const v3CoreCompiler = {
+  version: "0.7.6",
+  settings: {
+    metadata: {
+      bytecodeHash: "none",
+    },
+    optimizer: {
+      enabled: true,
+      runs: 800,
+    },
+  },
+};
+
+const v3PeripheryDefaultCompiler = {
+  version: "0.7.6",
+  settings: {
+    metadata: {
+      bytecodeHash: "none",
+    },
+    evmVersion: "istanbul",
+    optimizer: {
+      enabled: true,
+      runs: 1_000_000,
+    },
+  },
+};
+
+const v3PeripheryLowCompiler = {
+  version: "0.7.6",
+  settings: {
+    metadata: {
+      bytecodeHash: "none",
+    },
+    evmVersion: "istanbul",
+    optimizer: {
+      enabled: true,
+      runs: 2_000,
+    },
+  },
+};
+
+const v3PeripheryLowestCompiler = {
+  version: "0.7.6",
+  settings: {
+    metadata: {
+      bytecodeHash: "none",
+    },
+    evmVersion: "istanbul",
+    optimizer: {
+      enabled: true,
+      runs: 1_000,
+    },
+  },
+};
+
+const v3StakerCompiler = {
+  version: "0.7.6",
+  settings: {
+    metadata: {
+      bytecodeHash: "none",
+    },
+    optimizer: {
+      enabled: true,
+      runs: 1_000_000,
+    },
+  },
+};
+
+const configs: Record<string, SolcUserConfig> = {};
+
+getSolFiles("contracts/swap-router-contracts").forEach((path) => (configs[path] = swapRouterContractsCompiler));
+getSolFiles("contracts/v3-core").forEach((path) => (configs[path] = v3CoreCompiler));
+getSolFiles("contracts/v3-periphery").forEach((path) => (configs[path] = v3PeripheryDefaultCompiler));
+getSolFiles("contracts/v3-staker").forEach((path) => (configs[path] = v3StakerCompiler));
+
+// overrides from v3-periphery
+
+configs["contracts/v3-periphery/NonfungiblePositionManager.sol"] = v3PeripheryLowCompiler;
+configs["contracts/v3-periphery/NonfungibleTokenPositionDescriptor.sol"] = v3PeripheryLowestCompiler;
+configs["contracts/v3-periphery/libraries/NFTDescriptor.sol"] = v3PeripheryLowestCompiler;
+
+function getSolFiles(directoryPath: string): string[] {
+  const files: string[] = [];
+
+  const contents = fs.readdirSync(directoryPath);
+
+  for (const item of contents) {
+    const itemPath = path.join(directoryPath, item);
+    const isDirectory = fs.statSync(itemPath).isDirectory();
+
+    if (isDirectory) {
+      files.push(...getSolFiles(itemPath));
+    } else if (path.extname(item) === ".sol") {
+      files.push(itemPath);
+    }
+  }
+
+  return files;
 }
 
 const config: HardhatUserConfig = {
@@ -114,24 +229,33 @@ const config: HardhatUserConfig = {
     "polygon-mainnet": getChainConfig("polygon-mainnet"),
     "polygon-mumbai": getChainConfig("polygon-mumbai"),
     sepolia: getChainConfig("sepolia"),
+    anvil: getChainConfig("anvil"),
   },
   paths: {
     artifacts: "./artifacts",
     cache: "./cache",
     sources: "./contracts",
     tests: "./test",
+    deploy: "./deploy",
+    deployments: "./deployments",
   },
   solidity: {
-    version: "0.8.19",
-    settings: {
-      metadata: {
-        bytecodeHash: "none",
+    compilers: [
+      {
+        version: "0.7.6",
+        settings: {
+          metadata: {
+            bytecodeHash: "none",
+          },
+          evmVersion: "istanbul",
+          optimizer: {
+            enabled: true,
+            runs: 1_000_000,
+          },
+        },
       },
-      optimizer: {
-        enabled: runOptimizer,
-        runs: 800,
-      },
-    },
+    ],
+    overrides: configs,
   },
   typechain: {
     outDir: "types",
