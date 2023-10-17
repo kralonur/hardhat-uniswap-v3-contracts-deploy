@@ -6,9 +6,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  // contracts/swap-router-contracts/lens/QuoterV2.sol
-  await deploy("QuoterV2", {
-    contract: "contracts/swap-router-contracts/lens/QuoterV2.sol:QuoterV2",
+  // contracts/v3-periphery/lens/Quoter.sol
+  await deploy("Quoter", {
+    contract: "contracts/v3-periphery/lens/Quoter.sol:Quoter",
     from: deployer,
     args: Object.values(await getContractArgs(hre.deployments)),
     log: true,
@@ -16,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 };
 export default func;
-func.id = "012-Deploy-QuoterV2";
+func.id = "012-Deploy-Quoter";
 func.tags = ["Uniswap"];
 
 async function getContractArgs(deployments: DeploymentsExtension) {
