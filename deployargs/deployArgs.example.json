@@ -1,0 +1,6 @@
+{
+  "weth": "weth address",
+  "nativeCurrencyLabel": "currency label ex:BNB",
+  "ownerAddress": "contracts owner address",
+  "v2CoreFactory": "if v2 core factory is used then set address else leave it empty"
+}

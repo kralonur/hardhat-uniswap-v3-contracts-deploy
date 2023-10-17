@@ -28,3 +28,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 !deployargs/*.example.json
+
+# contracts
+contracts/swap-router-contracts
+contracts/v3-core
+contracts/v3-periphery
+contracts/v3-staker
