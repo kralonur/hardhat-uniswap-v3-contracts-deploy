@@ -43,6 +43,8 @@ const chainIds = {
   anvil: 31337,
   fuse: 122,
   spark: 123,
+  pgn: 424,
+  "pgn-testnet": 58008,
 };
 
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
@@ -56,6 +58,12 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
       break;
     case "spark":
       jsonRpcUrl = "https://rpc.fusespark.io";
+      break;
+    case "pgn":
+      jsonRpcUrl = "https://rpc.publicgoods.network";
+      break;
+    case "pgn-testnet":
+      jsonRpcUrl = "https://sepolia.publicgoods.network/";
       break;
     case "bsc":
       jsonRpcUrl = "https://bsc-dataseed1.binance.org";
@@ -240,6 +248,8 @@ const config: HardhatUserConfig = {
     anvil: getChainConfig("anvil"),
     fuse: getChainConfig("fuse"),
     spark: getChainConfig("spark"),
+    pgn: getChainConfig("pgn"),
+    "pgn-testnet": getChainConfig("pgn-testnet"),
   },
   paths: {
     artifacts: "./artifacts",
