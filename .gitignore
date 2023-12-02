@@ -17,7 +17,7 @@
 **/node_modules
 **/types
 deployargs/*
-deployments/*
+#deployments/*
 
 # files
 *.env
