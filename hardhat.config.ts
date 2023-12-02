@@ -41,6 +41,8 @@ const chainIds = {
   "polygon-mumbai": 80001,
   sepolia: 11155111,
   anvil: 31337,
+  fuse: 122,
+  spark: 123,
 };
 
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
@@ -48,6 +50,12 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
   switch (chain) {
     case "avalanche":
       jsonRpcUrl = "https://api.avax.network/ext/bc/C/rpc";
+      break;
+    case "fuse":
+      jsonRpcUrl = "https://rpc.fuse.io";
+      break;
+    case "spark":
+      jsonRpcUrl = "https://rpc.fusespark.io";
       break;
     case "bsc":
       jsonRpcUrl = "https://bsc-dataseed1.binance.org";
@@ -206,7 +214,7 @@ const config: HardhatUserConfig = {
     },
   },
   gasReporter: {
-    currency: "USDT",
+    currency: "USDC",
     coinmarketcap: cmcApiKey,
     enabled: reportGas,
     excludeContracts: [],
@@ -230,6 +238,8 @@ const config: HardhatUserConfig = {
     "polygon-mumbai": getChainConfig("polygon-mumbai"),
     sepolia: getChainConfig("sepolia"),
     anvil: getChainConfig("anvil"),
+    fuse: getChainConfig("fuse"),
+    spark: getChainConfig("spark"),
   },
   paths: {
     artifacts: "./artifacts",
