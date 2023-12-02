@@ -41,13 +41,31 @@ const chainIds = {
   "polygon-mumbai": 80001,
   sepolia: 11155111,
   anvil: 31337,
+  fuse: 122,
+  spark: 123,
+  pgn: 424,
+  "pgn-testnet": 58008,
 };
 
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
   let jsonRpcUrl: string;
+  let gasPrice: number;
   switch (chain) {
     case "avalanche":
       jsonRpcUrl = "https://api.avax.network/ext/bc/C/rpc";
+      break;
+    case "fuse":
+      jsonRpcUrl = "https://rpc.fuse.io";
+      break;
+    case "spark":
+      jsonRpcUrl = "https://rpc.fusespark.io";
+      break;
+    case "pgn":
+      jsonRpcUrl = "https://rpc.publicgoods.network";
+      break;
+    case "pgn-testnet":
+      jsonRpcUrl = "https://sepolia.publicgoods.network/";
+      gasPrice = 1000000000; // 1 gwei
       break;
     case "bsc":
       jsonRpcUrl = "https://bsc-dataseed1.binance.org";
@@ -69,6 +87,7 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
     },
     chainId: chainIds[chain],
     url: jsonRpcUrl,
+    gasPrice: gasPrice || "auto",
   };
 }
 
@@ -206,7 +225,7 @@ const config: HardhatUserConfig = {
     },
   },
   gasReporter: {
-    currency: "USDT",
+    currency: "USDC",
     coinmarketcap: cmcApiKey,
     enabled: reportGas,
     excludeContracts: [],
@@ -230,6 +249,10 @@ const config: HardhatUserConfig = {
     "polygon-mumbai": getChainConfig("polygon-mumbai"),
     sepolia: getChainConfig("sepolia"),
     anvil: getChainConfig("anvil"),
+    fuse: getChainConfig("fuse"),
+    spark: getChainConfig("spark"),
+    pgn: getChainConfig("pgn"),
+    "pgn-testnet": getChainConfig("pgn-testnet"),
   },
   paths: {
     artifacts: "./artifacts",
