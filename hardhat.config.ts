@@ -49,6 +49,7 @@ const chainIds = {
 
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
   let jsonRpcUrl: string;
+  let gasPrice: number;
   switch (chain) {
     case "avalanche":
       jsonRpcUrl = "https://api.avax.network/ext/bc/C/rpc";
@@ -64,6 +65,7 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
       break;
     case "pgn-testnet":
       jsonRpcUrl = "https://sepolia.publicgoods.network/";
+      gasPrice = 1000000000; // 1 gwei
       break;
     case "bsc":
       jsonRpcUrl = "https://bsc-dataseed1.binance.org";
@@ -85,6 +87,7 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
     },
     chainId: chainIds[chain],
     url: jsonRpcUrl,
+    gasPrice: gasPrice || "auto",
   };
 }
 
